@@ -31,10 +31,15 @@ const studioCollection = db.collection("studios")
 // http://localhost:8000/add-new-studio
 app.post('/add-new-studio', async (req, res) => {
   const data = req.body
-
   const result = await studioCollection.insertOne(data);
 
   console.log(result);
+  res.send(result);
+})
+
+//
+app.get('/studios', async(req, res) => {
+  const result = await studioCollection.find().toArray()
   res.send(result);
 })
 
