@@ -50,6 +50,27 @@ app.get('/studio/:id', async(req, res) => {
   res.send(result);
 })
 
+
+// --> jei user login kore studio add korbe, sodhu tar gula ei dekhabe!
+// http://localhost:8000/my-listings/${email}
+app.get("/my-listings/:email", async (req, res) => {
+  const email = req.params.email;
+
+  const query = { "owner.email": email };
+
+  const result = await studioCollection.find(query).toArray();
+
+  res.send(result);
+});
+
+// delele studio by the user!
+app.delete("/delete-studio/:id", async(req, res) => {
+  const {id} = req.params
+  const result = await studioCollection.deleteOne({_id : new ObjectId(id)})
+  res.send(result)
+})
+
+
 // localhost:8000
 app.listen(PORT, () => {
   console.log(`studioSpace Server is cooking at ${PORT}`);
