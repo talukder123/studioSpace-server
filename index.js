@@ -70,6 +70,18 @@ app.delete("/delete-studio/:id", async(req, res) => {
   res.send(result)
 })
 
+// update the added studio information using id by the user!
+app.patch("update-studio-info/:id", async(req, res) => {
+  const {id} = req.params
+  const updateData = req.body
+
+  const result = await studioCollection.updateOne(
+    {_id: new ObjectId(id)},
+    {$set: updateData}
+  )
+  res.json(result)
+})
+
 
 // localhost:8000
 app.listen(PORT, () => {
