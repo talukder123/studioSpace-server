@@ -26,6 +26,7 @@ const mongoClient = await connectToMongoDB()
 const db = mongoClient.db("studioSpace")
 
 const studioCollection = db.collection("studios")
+const bookingCollection = db.collection("bookings")
 
 
 // http://localhost:8000/add-new-studio
@@ -82,6 +83,47 @@ app.patch("/update-studio-info/:id", async(req, res) => {
   res.json(result)
   console.log("MongoDB Result:", result);
 })
+
+// Add Booking api!
+app.post("/book-studio/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bookingData = req.body;
+
+    // Check if the studio is already booked
+    const existingBooking = await bookingCollection.findOne({
+      studioId: id,
+      status: "Pending",
+    });
+
+    if (existingBooking) {
+      return res.status(409).send({
+        message: "This studio is already booked!",
+      });
+    }
+
+    // Create new booking
+    const newBooking = {
+      ...bookingData,
+      studioId: id,
+      status: "Pending",
+    };
+
+    const result = await bookingCollection.insertOne(newBooking);
+
+    res.status(201).send({
+      message: "Studio booked successfully!",
+      insertedId: result.insertedId,
+    });
+
+  } catch (error) {
+    res.status(500).send({
+      message: "Failed to book studio",
+      error: error.message,
+    });
+  }
+});
+
 
 
 // localhost:8000
