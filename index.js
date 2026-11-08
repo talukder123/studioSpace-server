@@ -124,6 +124,17 @@ app.post("/book-studio/:id", async (req, res) => {
   }
 });
 
+// get api for the my-bookings studio data
+app.get("/my-bookings", async (req, res) => {
+    const { email } = req.query;
+
+    const result = await bookingCollection
+        .find({ userEmail: email })
+        .toArray();
+
+    res.send(result);
+});
+
 
 
 // localhost:8000
