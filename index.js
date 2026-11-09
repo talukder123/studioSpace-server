@@ -173,6 +173,29 @@ app.patch("/cancel-booking/:id", async (req, res) => {
 });
 
 
+// Check Studio Booking Availability API
+
+app.get("/check-studio-booking/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existingBooking = await bookingCollection.findOne({
+      studioId: id,
+      status: "Pending",
+    });
+
+    res.send({
+      isBooked: !!existingBooking,
+    });
+
+  } catch (error) {
+    res.status(500).send({
+      message: "Failed to check studio availability",
+      error: error.message,
+    });
+  }
+});
+
 // localhost:8000
 app.listen(PORT, () => {
   console.log(`studioSpace Server is cooking at ${PORT}`);
