@@ -31,12 +31,25 @@ const bookingCollection = db.collection("bookings")
 
 // http://localhost:8000/add-new-studio
 app.post('/add-new-studio', async (req, res) => {
-  const data = req.body
-  const result = await studioCollection.insertOne(data);
+    const data = req.body;
 
-  console.log(result);
-  res.send(result);
-})
+    const existingStudio = await studioCollection.findOne({
+        "owner.email": data.owner.email,
+        title: data.title,
+        location: data.location
+    });
+
+    if (existingStudio) {
+        return res.status(409).send({
+            message: "This studio has already been added!"
+        });
+    }
+
+    const result = await studioCollection.insertOne(data);
+
+    console.log(result);
+    res.send(result);
+});
 
 // http://localhost:8000/studios
 app.get('/studios', async(req, res) => {
