@@ -28,6 +28,16 @@ const db = mongoClient.db("studioSpace")
 const studioCollection = db.collection("studios")
 const bookingCollection = db.collection("bookings")
 
+// http://localhost:8000/featured-studios
+app.get("/featured-studios", async (req, res) => {
+    const result = await studioCollection
+        .find()
+        .sort({ _id: -1 })
+        .limit(6)
+        .toArray();
+
+    res.send(result);
+});
 
 // http://localhost:8000/add-new-studio
 app.post('/add-new-studio', async (req, res) => {
@@ -52,10 +62,17 @@ app.post('/add-new-studio', async (req, res) => {
 });
 
 // http://localhost:8000/studios
-app.get('/studios', async(req, res) => {
-  const result = await studioCollection.find().toArray()
-  res.send(result);
-})
+app.get("/studios", async (req, res) => {
+    const { category } = req.query;
+
+    const filter = category ? { category } : {};
+
+    const result = await studioCollection
+        .find(filter)
+        .toArray();
+
+    res.send(result);
+});
 
 // http://localhost:8000/studio/{id}
 app.get('/studio/:id', async(req, res) => {
