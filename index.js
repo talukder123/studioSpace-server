@@ -136,6 +136,42 @@ app.get("/my-bookings", async (req, res) => {
 });
 
 
+// booking patch api for booking cancel 
+// Cancel Booking API
+app.patch("/cancel-booking/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await bookingCollection.updateOne(
+      {
+        _id: new ObjectId(id),
+        status: "Pending",
+      },
+      {
+        $set: {
+          status: "Cancelled",
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send({
+        message: "Booking not found or already cancelled!",
+      });
+    }
+
+    res.send({
+      message: "Booking cancelled successfully!",
+    });
+
+  } catch (error) {
+    res.status(500).send({
+      message: "Failed to cancel booking",
+      error: error.message,
+    });
+  }
+});
+
 
 // localhost:8000
 app.listen(PORT, () => {
