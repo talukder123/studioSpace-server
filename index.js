@@ -3,6 +3,8 @@ import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 import cors from "cors"
 
+import { createRemoteJWKSet, jwtVerify } from "jose";
+
 const app = express()
 const PORT=8000;
 
@@ -28,6 +30,41 @@ const db = mongoClient.db("studioSpace")
 const studioCollection = db.collection("studios")
 const bookingCollection = db.collection("bookings")
 
+
+//middlewae
+
+const JWKS = createRemoteJWKSet(
+    new URL(`${process.env.BETTER_AUTH_URL}/api/auth/jwks`)
+);
+
+const verifyJWT = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader?.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized access. Token is required.",
+            });
+        }
+
+        const token = authHeader.split(" ")[1];
+
+        const { payload } = await jwtVerify(token, JWKS);
+
+        req.user = payload;
+        console.log(req.user);
+
+        next();
+    } catch (error) {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid or expired token.",
+        });
+    }
+};
+
+
 // http://localhost:8000/featured-studios
 app.get("/featured-studios", async (req, res) => {
     const result = await studioCollection
@@ -40,7 +77,7 @@ app.get("/featured-studios", async (req, res) => {
 });
 
 // http://localhost:8000/add-new-studio
-app.post('/add-new-studio', async (req, res) => {
+app.post('/add-new-studio', verifyJWT, async (req, res) => {
     const data = req.body;
 
     const existingStudio = await studioCollection.findOne({
@@ -95,7 +132,7 @@ app.get("/my-listings/:email", async (req, res) => {
 });
 
 // delele studio by the user!
-app.delete("/delete-studio/:id", async(req, res) => {
+app.delete("/delete-studio/:id", verifyJWT, async(req, res) => {
   const {id} = req.params
   const result = await studioCollection.deleteOne({_id : new ObjectId(id)})
   res.send(result)
@@ -115,7 +152,7 @@ app.patch("/update-studio-info/:id", async(req, res) => {
 })
 
 // Add Booking api!
-app.post("/book-studio/:id", async (req, res) => {
+app.post("/book-studio/:id", verifyJWT, async (req, res) => {
   try {
     const { id } = req.params;
     const bookingData = req.body;
