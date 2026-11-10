@@ -267,3 +267,5 @@ app.get("/check-studio-booking/:id", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`studioSpace Server is cooking at ${PORT}`);
 });
+
+export default app;
